@@ -1,0 +1,292 @@
+const userModel = require("../models/UserModel");
+const roleModel = require("../models/RoleModel"); // Import Role Model
+const bcrypt = require("bcrypt");
+const mailUtil = require("../utils/MailUtil");
+const jwt = require("jsonwebtoken");
+const secret = "secret";
+
+//console.log("User Model:", userModel);
+
+const signup = async (req, res) => {
+  try {
+    console.log("Received Request Body:", req.body);
+
+    const { firstName, lastName, email, password, roleId } = req.body;
+
+    // ✅ Validate Required Fields
+    if (!firstName || !lastName || !email || !password || !roleId) {
+      return res.status(400).json({ message: "All fields are required (firstName, lastName, email, password, roleId)" });
+    }
+
+    // ✅ Check if Email is Already Registered
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+
+    // ✅ Hash Password for Security
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    // ✅ Get the Role from the Database
+    console.log("Role ID from request:", roleId);
+    const role = await roleModel.findById(roleId);
+    if (!role) {
+      console.error("Invalid roleId, no role found in database!");
+      return res.status(400).json({ message: "Invalid roleId" });
+    }
+    console.log("Fetched Role from Database:", role);
+
+    // ✅ Format Name Properly
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
+    // ✅ Create the New User in Database
+    const newUser = await userModel.create({
+      firstName,
+      lastName,
+      name: fullName,  // ✅ Store full name
+      email,
+      password: hashedPassword,
+      roleId,
+    });
+
+    console.log("Newly Created User:", newUser);
+    console.log("User Role:", role.name);
+
+    // ✅ Define Role-Specific Welcome Message
+    let roleMessage = "";
+    if (role.name.toLowerCase() === "admin") {
+      roleMessage = "You have been registered as an Admin. Manage users and settings.";
+    } else if (role.name.toLowerCase() === "restaurant") {
+      roleMessage = "You have been registered as a Restaurant. Start adding your offers!";
+    } else {
+      roleMessage = "You have been registered as a User. Start exploring restaurants!";
+    }
+
+    // ✅ Construct Welcome Email
+    const welcomeMessage = `
+  Hello ${fullName}, 👋
+
+  Welcome to Pocket Buddy! 🎉
+
+  ${roleMessage}
+
+  Here’s what you can do next:
+  ✅ Explore your dashboard  
+  ✅ Set up your profile  
+  ✅ Start creating and managing offers (if applicable)  
+
+  If you have any questions, feel free to reach out to our support team.
+
+  Happy exploring! 🚀  
+
+  Best regards,  
+  The Pocket Buddy Team
+  `;
+
+    // ✅ Send Welcome Email
+    await mailUtil.sendingMail(email, "Welcome to Pocket Buddy!", welcomeMessage);
+
+    // ✅ Return Success Response
+    res.status(201).json({ message: "User registered and welcome email sent!", data: newUser });
+  } catch (err) {
+    console.error("Signup Error:", err);
+    res.status(500).json({ message: "Signup error", error: err });
+  }
+};
+
+
+const loginUser = async (req, res) => {
+  try {
+    const user = await userModel.findOne({ email: req.body.email }).populate("roleId");
+    if (!user) return res.status(404).json({ message: "Email not found" });
+
+    const isMatch = bcrypt.compareSync(req.body.password, user.password);
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+
+    res.status(200).json({ message: "Login successful", data: user });
+  } catch (error) {
+    res.status(500).json({ message: "Login error", error: error.message });
+  }
+};
+
+// Add a new user
+const addUser = async (req, res) => {
+  const savedUser = await userModel.create(req.body);
+  res.json({
+    message: "User saved successfully",
+    data: savedUser,
+  });
+};
+
+// Get all users
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find().populate("roleId");
+
+    console.log("🔍 Raw Users from Database:", users); // Debugging
+
+    const formattedUsers = users.map(user => ({
+      _id: user._id,
+      name: (user.firstName && user.lastName) 
+        ? `${user.firstName} ${user.lastName}`.trim() 
+        : user.firstName 
+          ? user.firstName 
+          : user.lastName 
+            ? user.lastName 
+            : user.name 
+              ? user.name
+              : "No Name",  // ✅ Final fallback
+      email: user.email,
+      role: user.roleId?.name || "N/A",
+      status: user.status ? "Active" : "Inactive",
+    }));
+
+    console.log("✅ Formatted Users Sent to Frontend:", formattedUsers);
+
+    res.json({ message: "Users fetched successfully", data: formattedUsers });
+
+  } catch (error) {
+    console.error("❌ Error fetching users:", error);
+    res.status(500).json({ message: "Error fetching users", error });
+  }
+};
+
+// Get user by ID
+const getUserById = async (req, res) => {
+  const foundUser = await userModel.findById(req.params.id).populate('roleId');
+  res.json({
+    message: "User fetched successfully",
+    data: foundUser,
+  });
+};
+
+// Delete user by ID
+const deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists
+    const user = await userModel.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete user
+    const deletedUser = await userModel.findByIdAndDelete(id);
+    
+    res.status(200).json({
+      message: "User deleted successfully",
+      data: deletedUser,
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update User Status (active, not active)
+const updateUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    console.log("Received request:", { id, status });
+
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // ✅ Convert status to Boolean before saving
+    const newStatus = status === true || status === "Active";
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      id,
+      { status: newStatus }, // ✅ Ensure Boolean storage
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("✅ Updated User:", updatedUser);
+    res.status(200).json({ message: "Status updated successfully!", user: updatedUser });
+
+  } catch (error) {
+    console.error("❌ Error updating user status:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+//Forgot Password link to mailbox
+const forgotPassword = async (req, res) => {
+  try {
+    const foundUser = await userModel.findOne({ email: req.body.email });
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const token = jwt.sign(foundUser.toObject(), secret);
+    const url = `http://localhost:5173/reset-password?token=${encodeURIComponent(token)}`;
+    
+    const mailContent = `
+      <div style="font-family: Arial, sans-serif;">
+        <h2>Password Reset</h2>
+        <p>Click the link below to reset your password:</p>
+        <a href="${url}">Reset Password</a>
+        <p>This link expires in 1 hour.</p>
+      </div>
+    `;
+
+    await mailUtil.sendingMail(foundUser.email, "Password Reset Request", mailContent);
+    res.json({ message: "Reset link sent to email" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//reset password
+const resetpassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    
+    if (!token || !password) {
+      return res.status(400).json({ message: "Token and password are required" });
+    }
+
+    const decoded = jwt.verify(token, secret);
+    const user = await userModel.findById(decoded._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: "Reset link has expired" });
+    }
+    res.status(500).json({ message: "Error resetting password" });
+  }
+};
+
+
+// Export all functions
+module.exports = {
+  addUser,
+  getAllUsers,
+  getUserById,
+  deleteUserById,
+  signup,
+  loginUser,
+  updateUserStatus,
+  forgotPassword,
+  resetpassword,
+};
