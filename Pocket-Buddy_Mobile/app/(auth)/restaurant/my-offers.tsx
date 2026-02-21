@@ -10,6 +10,7 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
+import { router } from "expo-router";
 import {
   getRestaurantsByUserId,
   getOffersByRestaurant,
