@@ -8,10 +8,13 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { getOffers } from "@/src/services/api";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 
 type Offer = {
   _id: string;
@@ -21,12 +24,6 @@ type Offer = {
   discount_value?: number;
   valid_to?: string;
   imageURL?: string;
-};
-
-const formatDiscount = (offer: Offer) => {
-  if (offer.offer_type === "Flat Discount") return `₹${offer.discount_value} OFF`;
-  if (offer.offer_type === "Percentage") return `${offer.discount_value}% OFF`;
-  return offer.offer_type || "Offer";
 };
 
 export default function Home() {
@@ -57,165 +54,331 @@ export default function Home() {
     fetch();
   };
 
+  const cuisines = ["PIZZA", "GUJARATI", "SOUTH INDIAN", "NORTH INDIAN"];
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Discover Amazing Deals!</Text>
-        <Text style={styles.heroSub}>
-          Exclusive discounts at top restaurants near you
-        </Text>
-        <TouchableOpacity
-          style={styles.heroBtn}
-          onPress={() => router.push("/(tabs)/offers")}
-        >
-          <Text style={styles.heroBtnText}>Explore Offers</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.sectionTitle}>Exclusive Offers</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#f59e0b" style={{ marginTop: 24 }} />
-      ) : offers.length === 0 ? (
-        <Text style={styles.empty}>No offers available</Text>
-      ) : (
-        <View style={styles.grid}>
-          {offers.slice(0, 6).map((offer) => (
-            <TouchableOpacity
-              key={offer._id}
-              style={styles.card}
-              onPress={() => router.push(`/offer/${offer._id}`)}
-              activeOpacity={0.8}
-            >
-              <Image
-                source={{
-                  uri: offer.imageURL || "https://via.placeholder.com/300",
-                }}
-                style={styles.cardImage}
-              />
-              <View style={styles.cardBody}>
-                <Text style={styles.cardTitle} numberOfLines={1}>
-                  {offer.title}
-                </Text>
-                <Text style={styles.cardDesc} numberOfLines={2}>
-                  {offer.description || ""}
-                </Text>
-                <View style={styles.cardFooter}>
-                  <Text style={styles.discount}>
-                    {formatDiscount(offer)}
-                  </Text>
-                  <Text style={styles.date}>
-                    {offer.valid_to
-                      ? new Date(offer.valid_to).toLocaleDateString()
-                      : ""}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.claimBtn}
-                  onPress={() =>
-                    isLoggedIn
-                      ? router.push(`/offer/${offer._id}`)
-                      : router.push("/login")
-                  }
-                >
-                  <Text style={styles.claimBtnText}>
-                    {isLoggedIn ? "View" : "Sign Up to Claim"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      <TouchableOpacity
-        style={styles.loginPrompt}
-        onPress={() => router.push(isLoggedIn ? "/(tabs)/user/dashboard" : "/login")}
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.loginPromptText}>
-          {isLoggedIn ? "Go to Dashboard" : "Login to access all features"}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Feather name="search" size={20} color="#999" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for restaurant cusines"
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        {/* Cuisines Filter */}
+        <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.cuisinesList}
+          >
+            {cuisines.map((cuisine) => (
+              <TouchableOpacity key={cuisine} style={styles.cuisinePill}>
+                <Text style={styles.cuisineText}>{cuisine}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Promotional Banner Mock */}
+        <View style={styles.bannerContainer}>
+          <View style={styles.bannerWrapper}>
+            <Image 
+              source={{ uri: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80" }}
+              style={styles.bannerImage}
+            />
+            {/* Overlay Banner Elements */}
+            <View style={styles.bannerOverlay}>
+              <View style={styles.bannerBadge}>
+                <Text style={styles.bannerBadgeText}>PIZZA</Text>
+              </View>
+              <View style={styles.bannerRedBox}>
+                <Text style={styles.bannerTitle}>UNLIMITED MEAL</Text>
+                <Text style={styles.bannerTitle}>OFFER JUST</Text>
+                <Text style={styles.bannerPrice}>₹ 199/-</Text>
+              </View>
+            </View>
+            <View style={styles.dotsRow}>
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+            </View>
+          </View>
+        </View>
+
+        {/* New Outlets Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>New Outlets</Text>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
+            <Text style={styles.viewAllText}>View all</Text>
+          </TouchableOpacity>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#d32f2f" style={{ marginTop: 24 }} />
+        ) : offers.length === 0 ? (
+          <Text style={styles.empty}>No outlets available</Text>
+        ) : (
+          <View style={styles.grid}>
+            {offers.slice(0, 6).map((offer, index) => (
+              <TouchableOpacity
+                key={offer._id || index}
+                style={styles.card}
+                onPress={() => router.push(`/offer/${offer._id}`)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.cardLeft}>
+                  <Image
+                    source={{
+                      uri: offer.imageURL || "https://via.placeholder.com/150",
+                    }}
+                    style={styles.cardLogo}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.cardRight}>
+                  <Text style={styles.outletName} numberOfLines={1}>
+                    {offer.title.toUpperCase()}
+                  </Text>
+                  <Text style={styles.outletAddress} numberOfLines={2}>
+                    {offer.description || "Location details not available"}
+                  </Text>
+                  
+                  <View style={styles.starsWrapper}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <FontAwesome key={s} name="star" size={14} color="#d32f2f" style={styles.starIcon} />
+                    ))}
+                  </View>
+
+                  <View style={styles.distanceWrapper}>
+                    <FontAwesome name="map-marker" size={16} color="#d32f2f" style={styles.pinIcon} />
+                    <Text style={styles.distanceText}>
+                      {(Math.random() * 20).toFixed(1)} km away
+                    </Text>
+                  </View>
+
+                  <Text style={styles.viewMoreBtn}>View more</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: { flex: 1, backgroundColor: "#fff" },
   content: { paddingBottom: 32 },
-  hero: {
-    backgroundColor: "#1e3a5f",
-    padding: 28,
-    paddingTop: 20,
-    marginBottom: 20,
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
   },
-  heroTitle: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 8,
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 15,
+    color: "#333",
   },
-  heroSub: { fontSize: 16, color: "rgba(255,255,255,0.9)", marginBottom: 16 },
-  heroBtn: {
-    backgroundColor: "#f59e0b",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  cuisinesList: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  cuisinePill: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: "#bc20b5",
+    backgroundColor: "#fff",
+    marginRight: 10,
+  },
+  cuisineText: {
+    color: "#000",
+    fontWeight: "500",
+    fontSize: 13,
+  },
+  bannerContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  bannerWrapper: {
+    height: 180,
     borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#1e3163",
+    position: "relative",
+  },
+  bannerImage: {
+    width: "100%",
+    height: "100%",
+    opacity: 0.6,
+  },
+  bannerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 16,
+    justifyContent: "center",
+  },
+  bannerBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#fff",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  bannerBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#d32f2f",
+  },
+  bannerRedBox: {
+    backgroundColor: "#d32f2f",
+    padding: 10,
     alignSelf: "flex-start",
   },
-  heroBtnText: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  sectionTitle: {
-    fontSize: 20,
+  bannerTitle: {
+    color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
+    fontFamily: "Oswald", // Might not be available, but native will fallback
+  },
+  bannerPrice: {
+    color: "#ffca28",
+    fontWeight: "bold",
+    fontSize: 22,
+    marginTop: 4,
+  },
+  dotsRow: {
+    position: "absolute",
+    bottom: 10,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    backgroundColor: "rgba(255,255,255,0.5)",
+    borderRadius: 3,
+  },
+  dotActive: {
+    width: 16,
+    backgroundColor: "#fff",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginHorizontal: 16,
-    marginBottom: 12,
-    color: "#1e293b",
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "500",
+    color: "#000",
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: "#d32f2f",
+    fontWeight: "500",
   },
   empty: { textAlign: "center", color: "#64748b", marginTop: 24 },
   grid: { paddingHorizontal: 16, gap: 16 },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardImage: { width: "100%", height: 140 },
-  cardBody: { padding: 14 },
-  cardTitle: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
-  cardDesc: { fontSize: 14, color: "#64748b", marginBottom: 8 },
-  cardFooter: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  discount: { fontSize: 16, fontWeight: "bold", color: "#dc2626" },
-  date: { fontSize: 12, color: "#94a3b8" },
-  claimBtn: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 10,
+    backgroundColor: "#fff",
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  cardLeft: {
+    width: 120,
+    padding: 10,
+    justifyContent: "center",
     alignItems: "center",
   },
-  claimBtnText: { color: "#fff", fontWeight: "600" },
-  loginPrompt: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 16,
-    backgroundColor: "#fef3c7",
-    borderRadius: 12,
-    alignItems: "center",
+  cardLogo: {
+    width: "100%",
+    height: 80,
   },
-  loginPromptText: { color: "#92400e", fontWeight: "500" },
+  cardRight: {
+    flex: 1,
+    padding: 12,
+    paddingLeft: 4,
+  },
+  outletName: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 4,
+  },
+  outletAddress: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 8,
+    lineHeight: 16,
+  },
+  starsWrapper: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  starIcon: {
+    marginRight: 2,
+  },
+  distanceWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  pinIcon: {
+    marginRight: 6,
+  },
+  distanceText: {
+    fontSize: 13,
+    color: "#888",
+  },
+  viewMoreBtn: {
+    alignSelf: "flex-end",
+    color: "#d32f2f",
+    fontSize: 13,
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
 });

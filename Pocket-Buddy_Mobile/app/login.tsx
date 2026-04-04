@@ -13,6 +13,7 @@ import {
 import { router } from "expo-router";
 import { login } from "@/src/services/api";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { Feather } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -53,6 +54,13 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
+      <TouchableOpacity 
+        style={styles.backBtn} 
+        onPress={() => router.back()}
+      >
+        <Feather name="arrow-left" size={28} color="#fff" />
+      </TouchableOpacity>
+      
       <View style={styles.card}>
         <Text style={styles.title}>Pocket Buddy</Text>
         <Text style={styles.subtitle}>Welcome back!</Text>
@@ -102,6 +110,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#1a1a2e",
     padding: 20,
+  },
+  backBtn: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
   },
   card: {
     width: "100%",
