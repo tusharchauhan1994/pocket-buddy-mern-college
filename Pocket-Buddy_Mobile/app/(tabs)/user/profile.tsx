@@ -121,7 +121,7 @@ export default function UserProfile() {
           <ProfileMenuItem icon="heart-outline" title="My Favourites" onPress={() => {}} />
           <ProfileMenuItem icon="wallet-outline" title="My Wallet" onPress={() => {}} />
           <ProfileMenuItem icon="star-outline" title="My Reviews" onPress={() => {}} />
-          <ProfileMenuItem icon="pricetag-outline" title="My Deals" onPress={() => {}} />
+          <ProfileMenuItem icon="ticket-outline" title="My Redemptions" onPress={() => router.push("/(tabs)/user/requests")} />
           <ProfileMenuItem icon="gift-outline" title="Invite Friends" onPress={() => {}} />
           <ProfileMenuItem icon="log-out-outline" title="Logout" onPress={handleLogout} />
         </View>

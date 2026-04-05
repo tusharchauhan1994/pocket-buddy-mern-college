@@ -2,8 +2,8 @@ import { Stack } from "expo-router";
 
 export default function UserLayout() {
   return (
-    <Stack screenOptions={{ headerShown: true }} initialRouteName="dashboard">
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }} initialRouteName="profile">
+      <Stack.Screen name="index" />
       <Stack.Screen name="dashboard" options={{ title: "My Dashboard" }} />
       <Stack.Screen name="profile" options={{ title: "Profile" }} />
       <Stack.Screen name="offers" options={{ title: "My Offers" }} />

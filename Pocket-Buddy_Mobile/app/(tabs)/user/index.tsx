@@ -3,7 +3,7 @@ import { router } from "expo-router";
 
 export default function UserIndex() {
   useEffect(() => {
-    router.replace("/(tabs)/user/dashboard");
+    router.replace("/(tabs)/user/profile");
   }, []);
   return null;
 }
