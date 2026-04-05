@@ -105,7 +105,11 @@ export default function Home() {
                 <View style={styles.cuisineSection}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cuisineScroll}>
                     {CUISINES.map((cuisine, index) => (
-                      <TouchableOpacity key={index} style={styles.cuisinePill}>
+                      <TouchableOpacity 
+                        key={index} 
+                        style={styles.cuisinePill}
+                        onPress={() => setSearch(cuisine)}
+                      >
                         <Text style={styles.cuisineText}>{cuisine}</Text>
                       </TouchableOpacity>
                     ))}

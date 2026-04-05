@@ -8,17 +8,17 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
-        tabBarActiveTintColor: "#f59e0b",
+        headerShown: false,
+        tabBarActiveTintColor: "#d32f2f",
         tabBarInactiveTintColor: "#64748b",
-        headerStyle: { backgroundColor: "#1a1a2e" },
-        headerTintColor: "#fff",
+        headerStyle: { backgroundColor: "#ffffff" },
+        headerTintColor: "#1e293b",
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Pocket Buddy",
+          title: "PocketBuddy",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -36,34 +36,32 @@ export default function TabLayout() {
       <Tabs.Screen
         name="restaurants"
         options={{
-          title: "Restaurants",
+          title: "Restaurant",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="restaurant" size={size} color={color} />
           ),
         }}
       />
-      {isLoggedIn && (role === "User" || !role) && (
-        <Tabs.Screen
-          name="user"
-          options={{
-            title: "My Account",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person" size={size} color={color} />
-            ),
-          }}
-        />
-      )}
-      {!isLoggedIn && (
-        <Tabs.Screen
-          name="login-tab"
-          options={{
-            title: "Login",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="log-in" size={size} color={color} />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="user"
+        options={{
+          title: "Profile",
+          href: (isLoggedIn && (role === "User" || !role)) ? "/user" : null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="login-tab"
+        options={{
+          title: "Profile",
+          href: !isLoggedIn ? "/login-tab" : null,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="explore"
         options={{ href: null }}
