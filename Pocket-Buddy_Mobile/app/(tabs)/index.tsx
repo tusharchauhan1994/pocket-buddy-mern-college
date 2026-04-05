@@ -60,6 +60,14 @@ export default function Home() {
     fetch();
   };
 
+  const filteredOffers = offers.filter(
+    (o) =>
+      o.title?.toLowerCase().includes(search.toLowerCase()) ||
+      o.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const isSearching = search.trim() !== "";
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -70,56 +78,67 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header / Search Bar */}
-        <View style={styles.header}>
-          <View style={styles.locationRow}>
-            <Ionicons name="location" size={20} color="#d32f2f" />
-            <Text style={styles.locationText}>Home - Vadodara</Text>
-            <Ionicons name="chevron-down" size={16} color="#666" />
-          </View>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>U</Text>
-          </View>
-        </View>
 
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search for restaurant cuisines"
+            placeholder="Search for restaurants, offers..."
             placeholderTextColor="#94a3b8"
             value={search}
             onChangeText={setSearch}
           />
-        </View>
-
-        {/* Cuisine Pills */}
-        <View style={styles.cuisineSection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cuisineScroll}>
-            {CUISINES.map((cuisine, index) => (
-              <TouchableOpacity key={index} style={styles.cuisinePill}>
-                <Text style={styles.cuisineText}>{cuisine}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          {isSearching && (
+            <TouchableOpacity onPress={() => setSearch("")}>
+              <Ionicons name="close-circle" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {loading ? (
           <ActivityIndicator size="large" color="#d32f2f" style={{ marginTop: 40 }} />
         ) : (
           <>
-            {/* Offer Slider */}
-            {offers.length > 0 && <OfferSlider offers={offers.slice(0, 5)} />}
+            {!isSearching && (
+              <>
+                {/* Cuisine Pills */}
+                <View style={styles.cuisineSection}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cuisineScroll}>
+                    {CUISINES.map((cuisine, index) => (
+                      <TouchableOpacity key={index} style={styles.cuisinePill}>
+                        <Text style={styles.cuisineText}>{cuisine}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+
+                {/* Offer Slider */}
+                {offers.length > 0 && <OfferSlider offers={offers.slice(0, 5)} />}
+              </>
+            )}
 
             {/* Restaurant List */}
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>New Outlets</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
+              <Text style={styles.sectionTitle}>
+                {isSearching ? "Search Results" : "New Outlets"}
+              </Text>
+              {!isSearching && (
+                <TouchableOpacity>
+                  <Text style={styles.viewAllText}>View All</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.listContainer}>
-              {offers.slice(5).length > 0 ? (
+              {isSearching ? (
+                filteredOffers.length > 0 ? (
+                  filteredOffers.map((offer) => (
+                    <RestaurantCard key={offer._id} offer={offer} />
+                  ))
+                ) : (
+                  <Text style={styles.emptySearchText}>No results found for "{search}"</Text>
+                )
+              ) : offers.slice(5).length > 0 ? (
                 offers.slice(5).map((offer) => (
                   <RestaurantCard key={offer._id} offer={offer} />
                 ))
@@ -146,31 +165,6 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#ffffff" },
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { paddingBottom: 40 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    backgroundColor: "#ffffff",
-  },
-  locationRow: { flexDirection: "row", alignItems: "center" },
-  locationText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1e293b",
-    marginHorizontal: 8,
-  },
-  avatarCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#d32f2f",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -234,4 +228,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loginPromptText: { color: "#d32f2f", fontWeight: "bold" },
+  emptySearchText: {
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: 15,
+    marginTop: 40,
+  },
 });

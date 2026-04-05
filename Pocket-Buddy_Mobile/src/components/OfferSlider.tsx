@@ -11,7 +11,6 @@ import {
 import { router } from "expo-router";
 
 const { width } = Dimensions.get("window");
-const SLIDE_WIDTH = width - 32;
 
 type Offer = {
   _id: string;
@@ -24,20 +23,31 @@ type Offer = {
 export default function OfferSlider({ offers }: { offers: Offer[] }) {
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const indexRef = useRef(0);
 
   useEffect(() => {
     if (offers.length === 0) return;
+
     const interval = setInterval(() => {
-      let nextIndex = currentIndex + 1;
+      if (!flatListRef.current) return;
+      
+      let nextIndex = indexRef.current + 1;
       if (nextIndex >= offers.length) nextIndex = 0;
-      flatListRef.current?.scrollToIndex({
-        index: nextIndex,
-        animated: true,
-      });
-      setCurrentIndex(nextIndex);
+
+      try {
+        flatListRef.current.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        indexRef.current = nextIndex;
+        setCurrentIndex(nextIndex);
+      } catch (error) {
+        // FlatList layout not yet computed
+      }
     }, 3000);
+
     return () => clearInterval(interval);
-  }, [currentIndex, offers.length]);
+  }, [offers.length]);
 
   if (offers.length === 0) return null;
 
@@ -50,19 +60,26 @@ export default function OfferSlider({ offers }: { offers: Offer[] }) {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        onMomentumScrollEnd={(event) => {
-          const index = Math.round(
-            event.nativeEvent.contentOffset.x / SLIDE_WIDTH
-          );
-          setCurrentIndex(index);
-        }}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+        onViewableItemsChanged={useRef(({ viewableItems }: any) => {
+          if (viewableItems.length > 0 && viewableItems[0].index !== null) {
+            const index = viewableItems[0].index;
+            indexRef.current = index;
+            setCurrentIndex(index);
+          }
+        }).current}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.9}
-            style={styles.slide}
-            onPress={() => router.push(`/offer/${item._id}`)}
-          >
+          <View style={{ width, paddingHorizontal: 16 }}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.slide}
+              onPress={() => router.push(`/offer/${item._id}`)}
+            >
             <ImageBackground
               source={{ uri: item.imageURL || "https://via.placeholder.com/400x200" }}
               style={styles.imageBg}
@@ -81,7 +98,8 @@ export default function OfferSlider({ offers }: { offers: Offer[] }) {
                 </View>
               </View>
             </ImageBackground>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         )}
       />
       <View style={styles.pagination}>
@@ -104,9 +122,8 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   slide: {
-    width: SLIDE_WIDTH,
+    width: "100%",
     height: 180,
-    marginRight: 16,
     borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
