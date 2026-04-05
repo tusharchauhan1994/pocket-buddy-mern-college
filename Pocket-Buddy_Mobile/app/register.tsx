@@ -50,9 +50,12 @@ export default function RegisterScreen() {
         password,
         roleId,
       });
-      Alert.alert("Success", "Account created! Please sign in.", [
-        { text: "OK", onPress: () => router.replace("/login") },
-      ]);
+      if (Platform.OS === 'web') {
+        alert("Account created! Please sign in.");
+      } else {
+        Alert.alert("Success", "Account created! Please sign in.");
+      }
+      router.replace("/login");
     } catch (err: unknown) {
       console.log("Signup Error Details:", (err as any).response?.data || (err as any).message || err);
       const msg =
