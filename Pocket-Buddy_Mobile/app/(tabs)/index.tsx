@@ -4,14 +4,20 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  Image,
+  TextInput,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
+  FlatList,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { getOffers } from "@/src/services/api";
 import { useAuth } from "@/src/contexts/AuthContext";
+import OfferSlider from "@/src/components/OfferSlider";
+import RestaurantCard from "@/src/components/RestaurantCard";
 
 type Offer = {
   _id: string;
@@ -23,16 +29,13 @@ type Offer = {
   imageURL?: string;
 };
 
-const formatDiscount = (offer: Offer) => {
-  if (offer.offer_type === "Flat Discount") return `₹${offer.discount_value} OFF`;
-  if (offer.offer_type === "Percentage") return `${offer.discount_value}% OFF`;
-  return offer.offer_type || "Offer";
-};
+const CUISINES = ["Pizza", "Gujarati", "South Indian", "Chinese", "Burger", "Dessert"];
 
 export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch] = useState("");
   const { isLoggedIn } = useAuth();
 
   const fetch = async () => {
@@ -58,164 +61,177 @@ export default function Home() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Discover Amazing Deals!</Text>
-        <Text style={styles.heroSub}>
-          Exclusive discounts at top restaurants near you
-        </Text>
-        <TouchableOpacity
-          style={styles.heroBtn}
-          onPress={() => router.push("/(tabs)/offers")}
-        >
-          <Text style={styles.heroBtnText}>Explore Offers</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.sectionTitle}>Exclusive Offers</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#f59e0b" style={{ marginTop: 24 }} />
-      ) : offers.length === 0 ? (
-        <Text style={styles.empty}>No offers available</Text>
-      ) : (
-        <View style={styles.grid}>
-          {offers.slice(0, 6).map((offer) => (
-            <TouchableOpacity
-              key={offer._id}
-              style={styles.card}
-              onPress={() => router.push(`/offer/${offer._id}`)}
-              activeOpacity={0.8}
-            >
-              <Image
-                source={{
-                  uri: offer.imageURL || "https://via.placeholder.com/300",
-                }}
-                style={styles.cardImage}
-              />
-              <View style={styles.cardBody}>
-                <Text style={styles.cardTitle} numberOfLines={1}>
-                  {offer.title}
-                </Text>
-                <Text style={styles.cardDesc} numberOfLines={2}>
-                  {offer.description || ""}
-                </Text>
-                <View style={styles.cardFooter}>
-                  <Text style={styles.discount}>
-                    {formatDiscount(offer)}
-                  </Text>
-                  <Text style={styles.date}>
-                    {offer.valid_to
-                      ? new Date(offer.valid_to).toLocaleDateString()
-                      : ""}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.claimBtn}
-                  onPress={() =>
-                    isLoggedIn
-                      ? router.push(`/offer/${offer._id}`)
-                      : router.push("/login")
-                  }
-                >
-                  <Text style={styles.claimBtnText}>
-                    {isLoggedIn ? "View" : "Sign Up to Claim"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      <TouchableOpacity
-        style={styles.loginPrompt}
-        onPress={() => router.push(isLoggedIn ? "/(tabs)/user/dashboard" : "/login")}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.loginPromptText}>
-          {isLoggedIn ? "Go to Dashboard" : "Login to access all features"}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Header / Search Bar */}
+        <View style={styles.header}>
+          <View style={styles.locationRow}>
+            <Ionicons name="location" size={20} color="#d32f2f" />
+            <Text style={styles.locationText}>Home - Vadodara</Text>
+            <Ionicons name="chevron-down" size={16} color="#666" />
+          </View>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>U</Text>
+          </View>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for restaurant cuisines"
+            placeholderTextColor="#94a3b8"
+            value={search}
+            onChangeText={setSearch}
+          />
+        </View>
+
+        {/* Cuisine Pills */}
+        <View style={styles.cuisineSection}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cuisineScroll}>
+            {CUISINES.map((cuisine, index) => (
+              <TouchableOpacity key={index} style={styles.cuisinePill}>
+                <Text style={styles.cuisineText}>{cuisine}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#d32f2f" style={{ marginTop: 40 }} />
+        ) : (
+          <>
+            {/* Offer Slider */}
+            {offers.length > 0 && <OfferSlider offers={offers.slice(0, 5)} />}
+
+            {/* Restaurant List */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>New Outlets</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.listContainer}>
+              {offers.slice(5).length > 0 ? (
+                offers.slice(5).map((offer) => (
+                  <RestaurantCard key={offer._id} offer={offer} />
+                ))
+              ) : (
+                offers.slice(0, 5).map((offer) => (
+                  <RestaurantCard key={offer._id} offer={offer} />
+                ))
+              )}
+            </View>
+          </>
+        )}
+
+        {!isLoggedIn && (
+          <TouchableOpacity style={styles.loginPrompt} onPress={() => router.push("/login")}>
+            <Text style={styles.loginPromptText}>Login to access all features</Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#ffffff" },
   container: { flex: 1, backgroundColor: "#f8fafc" },
-  content: { paddingBottom: 32 },
-  hero: {
-    backgroundColor: "#1e3a5f",
-    padding: 28,
-    paddingTop: 20,
-    marginBottom: 20,
+  content: { paddingBottom: 40 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    backgroundColor: "#ffffff",
   },
-  heroTitle: {
-    fontSize: 26,
+  locationRow: { flexDirection: "row", alignItems: "center" },
+  locationText: {
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 8,
-  },
-  heroSub: { fontSize: 16, color: "rgba(255,255,255,0.9)", marginBottom: 16 },
-  heroBtn: {
-    backgroundColor: "#f59e0b",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-  },
-  heroBtnText: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginHorizontal: 16,
-    marginBottom: 12,
     color: "#1e293b",
+    marginHorizontal: 8,
   },
-  empty: { textAlign: "center", color: "#64748b", marginTop: 24 },
-  grid: { paddingHorizontal: 16, gap: 16 },
-  card: {
+  avatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#d32f2f",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
     borderRadius: 12,
-    overflow: "hidden",
-    marginBottom: 16,
+    paddingHorizontal: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: "#f1f5f9",
   },
-  cardImage: { width: "100%", height: 140 },
-  cardBody: { padding: 14 },
-  cardTitle: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
-  cardDesc: { fontSize: 14, color: "#64748b", marginBottom: 8 },
-  cardFooter: {
+  searchIcon: { marginRight: 8 },
+  searchInput: { flex: 1, paddingVertical: 12, fontSize: 15, color: "#1e293b" },
+  cuisineSection: { paddingVertical: 12, backgroundColor: "#ffffff" },
+  cuisineScroll: { paddingHorizontal: 16, gap: 10 },
+  cuisinePill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  cuisineText: { color: "#475569", fontWeight: "500", fontSize: 14 },
+  sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    paddingHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 12,
   },
-  discount: { fontSize: 16, fontWeight: "bold", color: "#dc2626" },
-  date: { fontSize: 12, color: "#94a3b8" },
-  claimBtn: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: "center",
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1e293b",
   },
-  claimBtnText: { color: "#fff", fontWeight: "600" },
+  viewAllText: {
+    color: "#d32f2f",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  listContainer: { paddingHorizontal: 16, paddingBottom: 20 },
   loginPrompt: {
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 12,
     padding: 16,
-    backgroundColor: "#fef3c7",
+    backgroundColor: "#fee2e2",
     borderRadius: 12,
     alignItems: "center",
   },
-  loginPromptText: { color: "#92400e", fontWeight: "500" },
+  loginPromptText: { color: "#d32f2f", fontWeight: "bold" },
 });

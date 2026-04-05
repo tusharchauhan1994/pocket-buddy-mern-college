@@ -39,9 +39,10 @@ export default function LoginScreen() {
       else if (role === "Admin") router.replace("/(auth)/admin/dashboard");
       else router.replace("/(tabs)");
     } catch (err: unknown) {
+      console.log("Login Error Details:", (err as any).response?.data || (err as any).message || err);
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Invalid credentials";
+          ?.message || "Invalid credentials or Network Error";
       Alert.alert("Login Failed", msg);
     } finally {
       setLoading(false);

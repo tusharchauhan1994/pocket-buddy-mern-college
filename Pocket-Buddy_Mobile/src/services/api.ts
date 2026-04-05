@@ -1,11 +1,46 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@/src/config/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 15000,
+  timeout: 15000, // Handle timeout errors
 });
+
+// Add interceptor to include token in requests
+api.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error("Error fetching token from AsyncStorage:", error);
+    }
+    // Log API requests for debugging
+    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.error(`[API Error] ${error.response.status} - ${error.config.url}:`, error.response.data);
+    } else if (error.request) {
+      console.error(`[API Network Error] No response received for ${error.config?.url}`);
+    } else {
+      console.error(`[API Setup Error]`, error.message);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Auth APIs
 export const login = (data: { email: string; password: string }) =>

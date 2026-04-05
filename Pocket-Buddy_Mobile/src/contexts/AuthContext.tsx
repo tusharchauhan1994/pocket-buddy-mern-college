@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (userId: string, role: string) => {
     await AsyncStorage.setItem(AUTH_KEYS.ID, userId);
     await AsyncStorage.setItem(AUTH_KEYS.ROLE, role);
+    await AsyncStorage.setItem("token", userId); // Use userId as token for now, to satisfy interceptor logic
     setState({
       userId,
       role,
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await AsyncStorage.multiRemove([AUTH_KEYS.ID, AUTH_KEYS.ROLE]);
+    await AsyncStorage.multiRemove([AUTH_KEYS.ID, AUTH_KEYS.ROLE, "token"]);
     setState({
       userId: null,
       role: null,

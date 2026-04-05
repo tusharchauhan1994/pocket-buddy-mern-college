@@ -54,9 +54,10 @@ export default function RegisterScreen() {
         { text: "OK", onPress: () => router.replace("/login") },
       ]);
     } catch (err: unknown) {
+      console.log("Signup Error Details:", (err as any).response?.data || (err as any).message || err);
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Signup failed";
+          ?.message || "Signup failed or Network Error";
       Alert.alert("Signup Failed", msg);
     } finally {
       setLoading(false);
