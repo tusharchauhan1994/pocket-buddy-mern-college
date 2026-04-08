@@ -180,10 +180,7 @@ export default function AddRestaurantScreen() {
           } as any);
         }
 
-        await axios.post(`${API_BASE_URL}/location/addWithFile`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-          transformRequest: [(data) => data],
-        });
+        await addRestaurant(formData);
         Alert.alert("Success", "Restaurant added", [
           { text: "OK", onPress: () => router.replace("/(auth)/restaurant/my-restaurant") },
         ]);

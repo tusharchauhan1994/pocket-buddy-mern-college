@@ -113,7 +113,7 @@ export default function RegisterScreen() {
           <View style={[styles.input, styles.picker]}>
             <Text
               style={[styles.pickerText, !roleId && styles.placeholder]}
-              onPress={() => {}}
+              onPress={() => { }}
             >
               {roles.find((r) => r._id === roleId)?.name || "Select role"}
             </Text>
