@@ -74,7 +74,9 @@ export const getOfferById = (id: string) => api.get(`/offer/${id}`);
 export const getOffersByRestaurant = (restaurantId: string) =>
   api.get(`/offer/by-restaurant/${restaurantId}`);
 export const addOffer = (formData: FormData) =>
-  api.post("/offer/add", formData);
+  api.post("/offer/add", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const updateOffer = (id: string, data: object) =>
   api.put(`/offer/update/${id}`, data);
 export const deleteOffer = (id: string) => api.delete(`/offer/delete/${id}`);
@@ -96,7 +98,9 @@ export const getRestaurantById = (id: string) =>
 export const getRestaurantsByUserId = (userId: string) =>
   api.get(`/location/getLocationByUserId/${userId}`);
 export const addRestaurant = (formData: FormData) =>
-  api.post("/location/addWithFile", formData);
+  api.post("/location/addWithFile", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const updateRestaurant = (id: string, data: object) =>
   api.put(`/location/updateRestaurant/${id}`, data);
 export const deleteRestaurant = (id: string) =>
