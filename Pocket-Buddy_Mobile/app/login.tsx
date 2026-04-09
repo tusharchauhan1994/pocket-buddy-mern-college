@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { router } from "expo-router";
 import { login } from "@/src/services/api";
@@ -51,10 +52,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
       <View style={styles.card}>
         <Text style={styles.title}>Pocket Buddy</Text>
         <Text style={styles.subtitle}>Welcome back!</Text>
@@ -94,10 +96,12 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#1a1a2e" },
   container: {
     flex: 1,
     justifyContent: "center",

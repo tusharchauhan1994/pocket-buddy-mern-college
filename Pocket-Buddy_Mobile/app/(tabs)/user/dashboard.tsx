@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  SafeAreaView,
 } from "react-native";
 import { router } from "expo-router";
 import { getOffers, getSubscriptionByUser } from "@/src/services/api";
@@ -54,11 +55,12 @@ export default function UserDashboard() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
       <Text style={styles.title}>Dashboard</Text>
 
       <View style={styles.cards}>
@@ -108,10 +110,12 @@ export default function UserDashboard() {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#f8fafc" },
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },

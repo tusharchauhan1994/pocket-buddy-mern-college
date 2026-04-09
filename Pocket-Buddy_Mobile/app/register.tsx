@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import { router } from "expo-router";
 import { signup, getRoles } from "@/src/services/api";
@@ -68,10 +69,11 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           <Text style={styles.title}>Join Pocket Buddy</Text>
@@ -157,10 +159,12 @@ export default function RegisterScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#1a1a2e" },
   container: { flex: 1, backgroundColor: "#1a1a2e" },
   scroll: { flexGrow: 1, justifyContent: "center", padding: 20 },
   card: {

@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  SafeAreaView,
 } from "react-native";
 import { getRedeemsByUser } from "@/src/services/api";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -81,27 +82,32 @@ export default function UserRequests() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#f59e0b" />
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#f59e0b" />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <FlatList
-      data={redeems}
-      keyExtractor={(item) => item._id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.list}
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={fetch} />}
-      ListEmptyComponent={
-        <Text style={styles.empty}>No redemption requests</Text>
-      }
-    />
+    <SafeAreaView style={styles.safeArea}>
+      <FlatList
+        data={redeems}
+        keyExtractor={(item) => item._id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={fetch} />}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No redemption requests</Text>
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#f8fafc" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   list: { padding: 16 },
   card: {

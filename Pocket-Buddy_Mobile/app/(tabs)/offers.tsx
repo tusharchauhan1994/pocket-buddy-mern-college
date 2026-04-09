@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
+  SafeAreaView,
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -104,7 +105,7 @@ export default function OffersScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.searchRow}>
         <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
         <TextInput
@@ -134,7 +135,7 @@ export default function OffersScreen() {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

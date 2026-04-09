@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { getOfferById, createRedeem } from "@/src/services/api";
@@ -73,27 +74,32 @@ export default function OfferDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#f59e0b" />
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#f59e0b" />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (!offer) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.error}>Offer not found</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.center}>
+          <Text style={styles.error}>Offer not found</Text>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Text style={styles.backBtnText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Image
-        source={{ uri: offer.imageURL || "https://via.placeholder.com/400" }}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Image
+          source={{ uri: offer.imageURL || "https://via.placeholder.com/400" }}
         style={styles.image}
       />
       <View style={styles.body}>
@@ -134,11 +140,13 @@ export default function OfferDetailScreen() {
           </TouchableOpacity>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#f8fafc" },
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { paddingBottom: 40 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },

@@ -12,6 +12,7 @@ import {
   Linking,
   Modal,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getRestaurants, getOffersByRestaurant } from "@/src/services/api";
@@ -138,7 +139,7 @@ export default function RestaurantsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.searchRow}>
         <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
         <TextInput
@@ -205,7 +206,7 @@ export default function RestaurantsScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
