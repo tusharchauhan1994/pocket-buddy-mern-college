@@ -32,7 +32,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      console.error(`[API Error] ${error.response.status} - ${error.config.url}:`, error.response.data);
+      if (error.response.status === 404) {
+        console.warn(`[API Info] 404 - ${error.config.url}:`, error.response.data);
+      } else {
+        console.error(`[API Error] ${error.response.status} - ${error.config.url}:`, error.response.data);
+      }
     } else if (error.request) {
       console.error(`[API Network Error] No response received for ${error.config?.url}`);
     } else {

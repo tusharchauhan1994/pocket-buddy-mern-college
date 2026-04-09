@@ -46,7 +46,13 @@ export default function TabLayout() {
         name="user"
         options={{
           title: "Profile",
-          href: (isLoggedIn && (role === "User" || !role)) ? "/user" : null,
+          href: isLoggedIn
+            ? role === "Restaurant"
+              ? "/(auth)/restaurant/dashboard"
+              : role === "Admin"
+              ? "/(auth)/admin/dashboard"
+              : "/user"
+            : null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
