@@ -11,7 +11,7 @@ type AuthState = {
 };
 
 type AuthContextType = AuthState & {
-  login: (userId: string, role: string) => Promise<void>;
+  login: (userId: string, role: string, token: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
 };
@@ -50,10 +50,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshAuth();
   }, []);
 
-  const login = async (userId: string, role: string) => {
+  const login = async (userId: string, role: string, token: string) => {
     await AsyncStorage.setItem(AUTH_KEYS.ID, userId);
     await AsyncStorage.setItem(AUTH_KEYS.ROLE, role);
-    await AsyncStorage.setItem("token", userId); // Use userId as token for now, to satisfy interceptor logic
+    await AsyncStorage.setItem("token", token);
     setState({
       userId,
       role,

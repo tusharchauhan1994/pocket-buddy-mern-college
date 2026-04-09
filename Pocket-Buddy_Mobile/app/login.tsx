@@ -31,8 +31,9 @@ export default function LoginScreen() {
       const data = res.data?.data || res.data;
       const userId = data._id;
       const role = data.roleId?.name || data.role?.name || "User";
+      const token = res.data?.token || data?.token || userId;
 
-      await authLogin(userId, role);
+      await authLogin(userId, role, token);
 
       if (role === "User") router.replace("/(tabs)/user/dashboard");
       else if (role === "Restaurant") router.replace("/(auth)/restaurant/dashboard");

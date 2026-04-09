@@ -41,8 +41,13 @@ export default function OffersScreen() {
   const fetch = async () => {
     try {
       const res = await getOffers();
-      const data = res.data?.offers ?? res.data;
-      setOffers(Array.isArray(data) ? data : []);
+      let offersData = Array.isArray(res.data)
+        ? res.data
+        : res.data?.offers || [];
+      const validOffers = offersData.filter(
+        (offer: any) => offer._id && offer.title && offer.description
+      );
+      setOffers(validOffers);
     } catch {
       setOffers([]);
     } finally {

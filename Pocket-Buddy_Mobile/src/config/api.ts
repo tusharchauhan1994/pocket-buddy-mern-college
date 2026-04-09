@@ -1,13 +1,11 @@
+import { Platform } from "react-native";
+
 /**
  * API configuration for Pocket Buddy Mobile
- * Backend runs on http://localhost:3000 (Pocket-Buddy_Backend)
- *
- * For physical device testing, replace with your computer's local IP:
- * e.g. "http://192.168.1.100:3000"
- *
  * Android Emulator: use "http://10.0.2.2:3000"
- * iOS Simulator: use "http://localhost:3000"
+ * Physical Device: use your actual machine's local IP on the network
  */
-// For iPhone/Android physical device testing, use your computer's local IP
-// Make sure phone and computer are on the same WiFi network
-export const API_BASE_URL = "http://192.168.1.8:3000";
+export const API_BASE_URL =
+  Platform.OS === "android"
+    ? "http://10.0.2.2:3000"
+    : "http://192.168.1.8:3000";

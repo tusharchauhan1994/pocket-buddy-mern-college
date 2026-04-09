@@ -17,8 +17,7 @@ import ProfileMenuItem from "@/src/components/ProfileMenuItem";
 export default function UserProfile() {
   const { userId, logout } = useAuth();
   const [user, setUser] = useState<{
-    firstName?: string;
-    lastName?: string;
+    name?: string;
     email?: string;
   } | null>(null);
   const [redeemsCount, setRedeemsCount] = useState(0);
@@ -78,14 +77,14 @@ export default function UserProfile() {
         <View style={styles.userSection}>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarLetter}>
-              {user?.firstName ? user.firstName.charAt(0).toUpperCase() : "U"}
+              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </Text>
             <View style={styles.badge}>
               <Ionicons name="checkmark-circle" size={16} color="#16a34a" />
             </View>
           </View>
           <Text style={styles.userName}>
-            {user?.firstName} {user?.lastName}
+            {user?.name || "User"}
           </Text>
           <Text style={styles.userEmail}>{user?.email || "user@example.com"}</Text>
           <Text style={styles.statLine}>
